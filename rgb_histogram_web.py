@@ -17,7 +17,7 @@ conn = sqlite3.connect('rgb_histograms.db')
 
 import nmslib
 # dim=4096
-index = nmslib.init(method='hnsw', space="l1", data_type=nmslib.DataType.SPARSE_VECTOR) 
+index = nmslib.init(method='hnsw', space="l1", data_type=nmslib.DataType.DENSE_VECTOR) 
 index_time_params = {'M': 32,'efConstruction': 200}
 
 IN_MEMORY_HISTS={}
@@ -156,7 +156,7 @@ async def get_similar_images_by_id_handler(item: Item_image_id):
     except RuntimeError:
        raise HTTPException(
            status_code=500, detail="Image with this id is not found")
-
+           
 @app.post("/delete_HIST_features")
 async def delete_hist_features_handler(item:Item_image_id):
     delete_descriptor_by_id(item.image_id)
