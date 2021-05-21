@@ -15,7 +15,7 @@ conn = sqlite3.connect('rgb_histograms.db')
 
 import nmslib
 # dim=4096
-IMAGE_PATH="./../../public/images"
+IMAGE_PATH="./../../../public/images"
 index = nmslib.init(method='hnsw', space="l1", data_type=nmslib.DataType.DENSE_VECTOR) 
 index_time_params = {'M': 32,'efConstruction': 200}
 
@@ -125,7 +125,7 @@ async def calculate_hist_features_handler(image: bytes = File(...),image_id: str
 class Item_image_id(BaseModel):
     image_id: int
 
-@app.post("/get_similar_images_by_id")
+@app.post("/hist_get_similar_images_by_id")
 async def get_similar_images_by_id_handler(item: Item_image_id):
     try:
        target_features = convert_array(get_rgb_histogram_by_id(item.image_id))
@@ -134,7 +134,13 @@ async def get_similar_images_by_id_handler(item: Item_image_id):
     except RuntimeError:
        raise HTTPException(
            status_code=500, detail="Image with this id is not found")
-           
+
+@app.post("/hist_get_similar_images_by_image_buffer")
+async def hist_get_similar_images_by_image_buffer_handler(image: bytes = File(...)):
+    target_features=get_features(image)
+    labels, _ = index.knnQuery(target_features, k=100)
+    return labels.tolist()
+
 @app.post("/delete_hist_features")
 async def delete_hist_features_handler(item:Item_image_id):
     delete_descriptor_by_id(item.image_id)
